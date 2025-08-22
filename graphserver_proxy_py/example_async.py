@@ -14,8 +14,11 @@ async def test_assistants_search_async(app_id="", api_key="", api_host="", api_u
     config = load_env_config()
     
     # 获取配置参数
-    # api_url = config.get('LANGGRAPH_API_URL', 'http://127.0.0.1:2024')
-    # api_key = config.get('LANGGRAPH_API_KEY', 'your_api_key')
+    api_url = config.get('LANGGRAPH_API_URL', 'http://127.0.0.1:2024')
+    api_key = config.get('LANGGRAPH_API_KEY', 'your_api_key')
+    app_id = config.get("APP_ID", "your_app_id")
+    app_secret = config.get("APP_SECRET", "your_app_secret")
+    app_host = config.get("APP_HOST", "you_app_host")
 
     # print(f"使用的API URL: {api_url}")
     # print(f"使用的API Key: {api_key}")
@@ -24,26 +27,13 @@ async def test_assistants_search_async(app_id="", api_key="", api_host="", api_u
 
     # 由于聚智平台使用了与langsmith不同的认证方式，这里不需要api_key
     # 而是需要传入聚智平台专门的header进行认证
-    # headers = create_headers(
-    #     app_id="74858E5E666E48448CD8", 
-    #     app_secret="76041D6E891A42B88D5D0532CA84782D",
-    #     host="172.16.251.149"
-    #     )
     headers = create_headers(
-        app_id=app_id,
-        app_secret=api_key,
-        host=api_host
-    )
-    # api_base = "http://172.16.251.149:9062/openapi/v2/graph/api/v1.0/graphApp/"
-    # api_id = "0c2c9588d40a20c4d1707f7e23466638"
-    # api_key = "76041D6E891A42B88D5D0532CA84782D"
-    # api_url = api_base + api_id
-    # # api_id = "d377f5c87b0a6f386d76d9ae4576d450"
-    # # api_url = "http://172.16.251.149:9062/agentV2/multi-agents/graph/api/v1.0/graphApp/0c2c9588d40a20c4d1707f7e23466638"
-    print(f"正在连接到: {api_url}")
-    print(f"使用的headers: {headers}")
+        app_id=app_id, 
+        app_secret=app_secret,
+        host=app_host
+        )
     client = get_client(url=api_url, api_key=api_key, headers=headers)
-    # client = get_client(url=api_url, api_key="place_holder_key")
+    # client = get_client(url=api_url, api_key=api_key)
     ASSISTANT_ID = config.get('LANGGRAPH_ASSISTANT_ID')
     try:
 
