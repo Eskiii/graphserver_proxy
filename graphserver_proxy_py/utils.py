@@ -28,8 +28,6 @@ def load_env_config(env_path: str = ".env") -> dict:
 
 
 def create_headers(app_id, app_secret, host):
-    
-
         # 生成RFC1123格式的时间戳
         now = datetime.now()
         date = format_date_time(mktime(now.timetuple()))
@@ -47,9 +45,24 @@ def create_headers(app_id, app_secret, host):
 
         # 将请求的鉴权参数组合为字典
         headers = {
-            "authorization": authorization,
-            "date": date,
-            "host": host,
-			"appId": app_id
+            "X-JZ-AUTHORIZATION": authorization,
+            "X-JZ-DATE": date,
+            "X-JZ-HOST": host,
+			"X-JZ-APPID": app_id
         }
+
         return headers
+		
+		
+# 入口函数
+if __name__ == "__main__":
+    # 应用管理 -> 应用详情 -> AppID(复制)
+    app_id = "xxxxx"
+    # 应用管理 -> 应用详情 -> App Secret Key(复制)
+    app_secret = "xxxxx"
+    # HOST
+    host = "IP"
+    # 初始化客户端
+    headers = create_headers(app_id, app_secret, host)
+    # 生成内容
+    print(json.dumps(headers, indent=2))

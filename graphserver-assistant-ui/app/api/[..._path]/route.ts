@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import CryptoJS from 'crypto-js';
 
 export const runtime = "edge";
 
@@ -7,6 +8,29 @@ function getCorsHeaders() {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "*",
+  };
+}
+
+function createHeaders(appId: string, appSecret:string, host: string) {
+  // 1. 生成 RFC1123 格式的时间戳
+  const date = new Date().toUTCString();
+
+  // 2. 拼接签名字符串
+  const signatureOrigin = `host: ${host}\ndate: ${date}\n`;
+
+  // 3. HMAC-SHA256 加密
+  const hmac = CryptoJS.HmacSHA256(signatureOrigin, appSecret);
+  const signatureBase64 = CryptoJS.enc.Base64.stringify(hmac);
+
+  // 4. 构造 Authorization 字段
+  const authorization = `hmac api_key=${appId}, algorithm=hmac-sha256, headers=host date request-line, signature=${signatureBase64}`;
+
+  // 5. 返回 headers
+  return {
+    "X-JZ-AUTHORIZATION": authorization,
+    "X-JZ-DATE": date,
+    "X-JZ-HOST": host,
+    "X-JZ-APPID": appId
   };
 }
 
@@ -26,8 +50,17 @@ async function handleRequest(req: NextRequest, method: string) {
       headers: {
         "x-api-key": process.env["LANGCHAIN_API_KEY"] || "",
         "Content-Type": "application/json",
+        // "authorization": "hmac api_key=74858E5E666E48448CD8, algorithm=hmac-sha256, headers=host date request-line, signature=UP10uUM9Gnj8Ywr6ETyUaRFcTf9XKdF+LNjUo0MfPBg=",
+        // "date": "Wed, 09 Jul 2025 08:29:00 GMT",
+        // "host": "172.16.251.149",
+        // "appId": "74858E5E666E48448CD8"
       },
     };
+
+    const appid = process.env["APPID"] || "";
+    const appSecret = process.env["APPSECRET"] || "";
+    const host = process.env["LANGGRAPH_API_HOST"] || "";
+    const pz_header = createHeaders(appid, appSecret, host);
 
     if (["POST", "PUT", "PATCH"].includes(method)) {
       options.body = await req.text();
@@ -45,7 +78,8 @@ async function handleRequest(req: NextRequest, method: string) {
       statusText: res.statusText,
       headers: {
         ...res.headers,
-        ...getCorsHeaders(),
+        // ...getCorsHeaders(),
+        ...pz_header
       },
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
